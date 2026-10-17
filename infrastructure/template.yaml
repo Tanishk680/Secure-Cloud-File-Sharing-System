@@ -1,0 +1,284 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Secure Cloud File Sharing System
+
+Parameters:
+  CognitoUserPoolId:
+    Type: String
+  CognitoClientId:
+    Type: String
+
+Globals:
+  Function:
+    Runtime: nodejs18.x
+    Timeout: 30
+    Environment:
+      Variables:
+        S3_BUCKET_NAME: !Ref FilesBucket
+        DYNAMODB_FILES_TABLE: !Ref FilesTable
+        DYNAMODB_SHARES_TABLE: !Ref SharesTable
+        FILES_OWNER_INDEX: ownerId-index
+        SHARES_FILE_INDEX: fileId-index
+        COGNITO_USER_POOL_ID: !Ref CognitoUserPoolId
+        COGNITO_CLIENT_ID: !Ref CognitoClientId
+        AWS_REGION: !Ref AWS::Region
+
+Resources:
+  FilesBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  FilesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: fileId
+          AttributeType: S
+        - AttributeName: ownerId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: fileId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: ownerId-index
+          KeySchema:
+            - AttributeName: ownerId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+  SharesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: shareId
+          AttributeType: S
+        - AttributeName: fileId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: shareId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: fileId-index
+          KeySchema:
+            - AttributeName: fileId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+  CreateUploadUrlFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../backend
+      Handler: functions/createUploadUrl.handler
+      Policies:
+        - S3WritePolicy:
+            BucketName: !Ref FilesBucket
+        - DynamoDBCrudPolicy:
+            TableName: !Ref FilesTable
+      Events:
+        CreateUploadUrl:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /files/upload-url
+            Method: POST
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  ConfirmUploadFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../backend
+      Handler: functions/confirmUpload.handler
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Ref FilesBucket
+        - DynamoDBCrudPolicy:
+            TableName: !Ref FilesTable
+      Events:
+        ConfirmUpload:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /files
+            Method: POST
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  ListFilesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../backend
+      Handler: functions/listFiles.handler
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref FilesTable
+      Events:
+        ListFiles:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /files
+            Method: GET
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  CreateDownloadUrlFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../backend
+      Handler: functions/createDownloadUrl.handler
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Ref FilesBucket
+        - DynamoDBReadPolicy:
+            TableName: !Ref FilesTable
+      Events:
+        Download:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /files/{fileId}/download-url
+            Method: GET
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  DeleteFileFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../backend
+      Handler: functions/deleteFile.handler
+      Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref FilesBucket
+        - DynamoDBCrudPolicy:
+            TableName: !Ref FilesTable
+      Events:
+        DeleteFile:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /files/{fileId}
+            Method: DELETE
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  CreateShareFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../backend
+      Handler: functions/createShare.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref FilesTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SharesTable
+      Events:
+        CreateShare:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /files/{fileId}/shares
+            Method: POST
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  ResolveShareFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../backend
+      Handler: functions/resolveShare.handler
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Ref FilesBucket
+        - DynamoDBReadPolicy:
+            TableName: !Ref FilesTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref SharesTable
+      Events:
+        ResolveShare:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /shares/{shareId}
+            Method: GET
+            Auth:
+              Authorizer: NONE
+
+  ListSharesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../backend
+      Handler: functions/listShares.handler
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref FilesTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref SharesTable
+      Events:
+        ListShares:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /files/{fileId}/shares
+            Method: GET
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  RevokeShareFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../backend
+      Handler: functions/revokeShare.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SharesTable
+      Events:
+        RevokeShare:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /shares/{shareId}
+            Method: DELETE
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+  ApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Cors:
+        AllowOrigin: "'*'"
+        AllowHeaders: "'Content-Type,Authorization'"
+        AllowMethods: "'GET,POST,DELETE,OPTIONS'"
+      Auth:
+        DefaultAuthorizer: CognitoAuthorizer
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn: !Sub arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPoolId}
+
+Outputs:
+  ApiUrl:
+    Description: API Gateway endpoint URL
+    Value: !Sub https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod
+  S3BucketName:
+    Description: S3 bucket for file storage
+    Value: !Ref FilesBucket
+  FilesTableName:
+    Description: DynamoDB files table
+    Value: !Ref FilesTable
+  SharesTableName:
+    Description: DynamoDB shares table
+    Value: !Ref SharesTable

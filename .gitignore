@@ -1,1 +1,18 @@
 CC_Abstract.md
+Implementstion-Brief.md
+frontend/node_modules/
+frontend/dist/
+backend/node_modules/
+Implementation-Log.md
+TODO.md
+
+# Environment files
+.env
+.env.local
+*.env
+!*.env.example
+
+# Logs / OS files
+*.log
+.DS_Store
+Thumbs.db
