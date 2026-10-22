@@ -84,6 +84,26 @@
   revocation, expiry, share listing, and input validation.
 - Added `test` script to `backend/package.json` and a README section.
 
+### 2026-10-17 — Session 3 (deployment blocker review)
+
+**Infrastructure fixes (template.yaml)**
+- Removed reserved `AWS_REGION` from Lambda env vars (Lambda injects it).
+- Added S3 `CorsConfiguration` (GET/PUT/HEAD, `*` origin) so browser pre-signed
+  uploads work.
+- API Gateway: `AddDefaultAuthorizerToCorsPreflight: false` + `GatewayResponses`
+  for `DEFAULT_4XX`/`DEFAULT_5XX` with CORS headers, so OPTIONS preflight is not
+  blocked by the Cognito authorizer and error responses stay CORS-readable.
+- Upgraded Lambda runtime `nodejs18.x` → `nodejs20.x`.
+
+**Fifth blocker found during review (token type)**
+- API Gateway REST Cognito authorizers without OAuth scopes treat the bearer
+  token as an **ID token**. The app was sending the **access token** while the
+  backend verified `tokenUse: 'access'` — a mismatch that would cause 401s.
+- Fixed end to end: frontend now sends the **ID token**
+  (`getIdToken()` in `services/auth.js`; used by `api.js` and `SharedFile.jsx`),
+  and backend `lib/auth.js` verifies `tokenUse: 'id'` (+ `clientId`/`aud` check).
+- Frontend build passes; local harness still 34/34.
+
 ### Next Steps
 - Developer: create Cognito User Pool/App Client, then `sam build && sam deploy`.
 - Developer: configure `frontend/.env` and deploy via Amplify.

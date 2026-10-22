@@ -10,7 +10,7 @@ Parameters:
 
 Globals:
   Function:
-    Runtime: nodejs18.x
+    Runtime: nodejs20.x
     Timeout: 30
     Environment:
       Variables:
@@ -21,7 +21,6 @@ Globals:
         SHARES_FILE_INDEX: fileId-index
         COGNITO_USER_POOL_ID: !Ref CognitoUserPoolId
         COGNITO_CLIENT_ID: !Ref CognitoClientId
-        AWS_REGION: !Ref AWS::Region
 
 Resources:
   FilesBucket:
@@ -36,6 +35,19 @@ Resources:
         BlockPublicPolicy: true
         IgnorePublicAcls: true
         RestrictPublicBuckets: true
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - '*'
+            AllowedMethods:
+              - GET
+              - PUT
+              - HEAD
+            AllowedOrigins:
+              - '*'
+            ExposedHeaders:
+              - ETag
+            MaxAge: 3000
 
   FilesTable:
     Type: AWS::DynamoDB::Table
@@ -263,8 +275,22 @@ Resources:
         AllowOrigin: "'*'"
         AllowHeaders: "'Content-Type,Authorization'"
         AllowMethods: "'GET,POST,DELETE,OPTIONS'"
+      GatewayResponses:
+        DEFAULT_4XX:
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Headers: "'Content-Type,Authorization'"
+              Access-Control-Allow-Methods: "'GET,POST,DELETE,OPTIONS'"
+        DEFAULT_5XX:
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Headers: "'Content-Type,Authorization'"
+              Access-Control-Allow-Methods: "'GET,POST,DELETE,OPTIONS'"
       Auth:
         DefaultAuthorizer: CognitoAuthorizer
+        AddDefaultAuthorizerToCorsPreflight: false
         Authorizers:
           CognitoAuthorizer:
             UserPoolArn: !Sub arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPoolId}

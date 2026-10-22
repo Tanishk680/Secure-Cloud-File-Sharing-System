@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { resolveShare } from '../services/api';
-import { getAccessToken } from '../services/auth';
+import { getIdToken } from '../services/auth';
 
 export default function SharedFile() {
   const { shareId } = useParams();
@@ -14,7 +14,7 @@ export default function SharedFile() {
       try {
         let token = null;
         try {
-          token = await getAccessToken();
+          token = await getIdToken();
         } catch (e) {
           token = null; // unauthenticated is fine for link shares
         }

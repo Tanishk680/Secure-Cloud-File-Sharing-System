@@ -49,6 +49,8 @@
 - [x] Backend handler syntax validated
 - [x] SAM template validated as well-formed YAML
 - [x] Local mock test harness (`backend/test/localTest.js`) — 34 cases pass without AWS
+- [x] Fix deployment blockers: reserved AWS_REGION, S3 CORS, API Gateway preflight/CORS, nodejs20.x
+- [x] Align token type end to end (ID token for REST Cognito authorizer + backend verify)
 - [x] Write comprehensive README (architecture, setup, deployment, testing)
 - [x] Maintain Implementation-Log.md with progress
 - [ ] Manual end-to-end testing after AWS deployment (requires real AWS account)

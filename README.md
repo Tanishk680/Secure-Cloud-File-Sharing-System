@@ -93,10 +93,12 @@ secure-cloud-file-sharing/
 
 ### Authentication
 1. The user registers/logs in via the React app, which calls **Cognito** directly.
-2. Cognito returns a JWT **access token** to the browser.
+2. Cognito returns JWTs to the browser. The app sends the **ID token** as the
+   bearer credential (a REST API Cognito authorizer without OAuth scopes expects
+   an ID token).
 3. The axios client attaches `Authorization: Bearer <token>` to every API call.
 4. **API Gateway** validates the token with a Cognito authorizer before invoking
-   Lambda. Lambda independently re-verifies the token as defense in depth.
+   Lambda. Lambda independently re-verifies the same token as defense in depth.
 
 ### Upload (no file bytes flow through Lambda)
 1. The frontend calls `POST /files/upload-url` with name, type, and size.
@@ -242,7 +244,7 @@ Status codes used: `200`, `201`, `400`, `401`, `403`, `404`, `500`.
 ### 1. Deploy the backend (AWS SAM)
 
 ```bash
-# Prerequisites: AWS CLI configured, SAM CLI installed, Node.js 18+
+# Prerequisites: AWS CLI configured, SAM CLI installed, Node.js 20+
 cd infrastructure
 sam build
 sam deploy --guided \
@@ -335,7 +337,7 @@ Expected output ends with `=== Results: 34 passed, 0 failed ===`.
 ## Tech stack
 
 - **Frontend:** React 18, Vite, React Router, AWS Amplify (`aws-amplify` v6), axios
-- **Backend:** Node.js 18, AWS SDK v3, `aws-jwt-verify`, `uuid`
+- **Backend:** Node.js 20 (Lambda runtime `nodejs20.x`), AWS SDK v3, `aws-jwt-verify`, `uuid`
 - **Infrastructure:** AWS SAM (`infrastructure/template.yaml`)
 
 ## License
