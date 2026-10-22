@@ -8,22 +8,22 @@ exports.handler = async (event) => {
     if (!shareId) throw new Error('Missing shareId');
 
     const share = await getShare(shareId);
-    if (!share) return { statusCode: 404, body: JSON.stringify({ error: 'Share not found' }) };
-    if (share.revoked) return { statusCode: 403, body: JSON.stringify({ error: 'Share revoked' }) };
+    if (!share) return { statusCode: 404, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ error: 'Share not found' }) };
+    if (share.revoked) return { statusCode: 403, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ error: 'Share revoked' }) };
 
     const now = Math.floor(Date.now() / 1000);
     if (share.expiresAt && now > share.expiresAt) {
-      return { statusCode: 403, body: JSON.stringify({ error: 'Share expired' }) };
+      return { statusCode: 403, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ error: 'Share expired' }) };
     }
 
     const file = await getFile(share.fileId);
-    if (!file) return { statusCode: 404, body: JSON.stringify({ error: 'File not found' }) };
+    if (!file) return { statusCode: 404, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ error: 'File not found' }) };
 
     // Check access
     if (share.shareType === 'recipient') {
       const userId = await getUserFromToken(event);
-      if (!userId) return { statusCode: 401, body: JSON.stringify({ error: 'Authentication required' }) };
-      if (userId !== share.recipientId) return { statusCode: 403, body: JSON.stringify({ error: 'Forbidden' }) };
+      if (!userId) return { statusCode: 401, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ error: 'Authentication required' }) };
+      if (userId !== share.recipientId) return { statusCode: 403, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ error: 'Forbidden' }) };
     }
     // For link sharing, unauthenticated is allowed as per spec
 

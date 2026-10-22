@@ -12,10 +12,10 @@ exports.handler = async (event) => {
 
     const file = await getFile(fileId);
     if (!file) {
-      return { statusCode: 404, body: JSON.stringify({ error: 'File not found' }) };
+      return { statusCode: 404, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ error: 'File not found' }) };
     }
     if (file.ownerId !== ownerId) {
-      return { statusCode: 403, body: JSON.stringify({ error: 'Forbidden' }) };
+      return { statusCode: 403, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ error: 'Forbidden' }) };
     }
 
     await deleteObject(file.s3Key);

@@ -8,8 +8,8 @@ exports.handler = async (event) => {
     if (!shareId) throw new Error('Missing shareId');
 
     const share = await getShare(shareId);
-    if (!share) return { statusCode: 404, body: JSON.stringify({ error: 'Share not found' }) };
-    if (share.ownerId !== ownerId) return { statusCode: 403, body: JSON.stringify({ error: 'Forbidden' }) };
+    if (!share) return { statusCode: 404, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ error: 'Share not found' }) };
+    if (share.ownerId !== ownerId) return { statusCode: 403, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ error: 'Forbidden' }) };
 
     await updateShareRevoked(shareId, true);
     return {

@@ -20,8 +20,8 @@ exports.handler = async (event) => {
     if (!fileId) throw new Error('Missing fileId');
 
     const file = await getFile(fileId);
-    if (!file) return { statusCode: 404, body: JSON.stringify({ error: 'File not found' }) };
-    if (file.ownerId !== ownerId) return { statusCode: 403, body: JSON.stringify({ error: 'Forbidden' }) };
+    if (!file) return { statusCode: 404, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ error: 'File not found' }) };
+    if (file.ownerId !== ownerId) return { statusCode: 403, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ error: 'Forbidden' }) };
 
     const body = JSON.parse(event.body || '{}');
     const { shareType, recipientId, expiry } = body;
