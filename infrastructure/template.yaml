@@ -18,7 +18,6 @@ Globals:
   Function:
     Runtime: nodejs20.x
     Timeout: 30
-    Role: !Ref LambdaRoleArn
     Environment:
       Variables:
         S3_BUCKET_NAME: !Ref FilesBucket
@@ -101,6 +100,7 @@ Resources:
     Properties:
       CodeUri: ../backend
       Handler: functions/createUploadUrl.handler
+      Role: !Ref LambdaRoleArn
       Events:
         CreateUploadUrl:
           Type: Api
@@ -116,6 +116,7 @@ Resources:
     Properties:
       CodeUri: ../backend
       Handler: functions/confirmUpload.handler
+      Role: !Ref LambdaRoleArn
       Events:
         ConfirmUpload:
           Type: Api
@@ -131,6 +132,7 @@ Resources:
     Properties:
       CodeUri: ../backend
       Handler: functions/listFiles.handler
+      Role: !Ref LambdaRoleArn
       Events:
         ListFiles:
           Type: Api
@@ -146,6 +148,7 @@ Resources:
     Properties:
       CodeUri: ../backend
       Handler: functions/createDownloadUrl.handler
+      Role: !Ref LambdaRoleArn
       Events:
         Download:
           Type: Api
@@ -161,6 +164,7 @@ Resources:
     Properties:
       CodeUri: ../backend
       Handler: functions/deleteFile.handler
+      Role: !Ref LambdaRoleArn
       Events:
         DeleteFile:
           Type: Api
@@ -176,6 +180,7 @@ Resources:
     Properties:
       CodeUri: ../backend
       Handler: functions/createShare.handler
+      Role: !Ref LambdaRoleArn
       Events:
         CreateShare:
           Type: Api
@@ -191,6 +196,7 @@ Resources:
     Properties:
       CodeUri: ../backend
       Handler: functions/resolveShare.handler
+      Role: !Ref LambdaRoleArn
       Events:
         ResolveShare:
           Type: Api
@@ -206,6 +212,7 @@ Resources:
     Properties:
       CodeUri: ../backend
       Handler: functions/listShares.handler
+      Role: !Ref LambdaRoleArn
       Events:
         ListShares:
           Type: Api
@@ -221,6 +228,7 @@ Resources:
     Properties:
       CodeUri: ../backend
       Handler: functions/revokeShare.handler
+      Role: !Ref LambdaRoleArn
       Events:
         RevokeShare:
           Type: Api
