@@ -302,6 +302,23 @@ Authorization
 
 ---
 
+## Local logic tests (no AWS required)
+
+The backend ships with a self-contained harness that mocks Cognito, S3, and
+DynamoDB in memory, so the authorization and sharing logic can be validated
+without an AWS account, credentials, or even installing the AWS SDK:
+
+```bash
+cd backend
+node test/localTest.js      # or: npm test
+```
+
+It exercises 34 cases covering upload scoping, size/type validation, ownership
+checks, link vs recipient shares, revocation, expiry, listing, and deletion.
+Expected output ends with `=== Results: 34 passed, 0 failed ===`.
+
+---
+
 ## Security notes
 
 - S3 Block Public Access is enabled; objects are never public.

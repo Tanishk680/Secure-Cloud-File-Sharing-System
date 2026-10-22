@@ -48,6 +48,7 @@
 - [x] Frontend production build passes
 - [x] Backend handler syntax validated
 - [x] SAM template validated as well-formed YAML
+- [x] Local mock test harness (`backend/test/localTest.js`) — 34 cases pass without AWS
 - [x] Write comprehensive README (architecture, setup, deployment, testing)
 - [x] Maintain Implementation-Log.md with progress
 - [ ] Manual end-to-end testing after AWS deployment (requires real AWS account)

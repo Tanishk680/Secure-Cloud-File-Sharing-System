@@ -72,8 +72,19 @@
 - No AWS resources have been deployed or end-to-end tested. No account IDs, keys,
   bucket names, or URLs were invented. Developer must deploy per README.
 
+### 2026-10-17 — Session 2 (local validation)
+
+**Local mock test harness**
+- Added `backend/test/localTest.js`, a dependency-free harness that patches
+  Node's module loader to inject in-memory fakes for `../lib/auth`,
+  `../lib/s3`, `../lib/dynamodb`, and `uuid`. No AWS SDK install required.
+- 34 assertions, all passing (`npm test` from `backend/`). Covers:
+  upload-key scoping, cross-user key-claim rejection, size/missing-object
+  rejection, ownership on list/download/delete, link vs recipient shares,
+  revocation, expiry, share listing, and input validation.
+- Added `test` script to `backend/package.json` and a README section.
+
 ### Next Steps
 - Developer: create Cognito User Pool/App Client, then `sam build && sam deploy`.
 - Developer: configure `frontend/.env` and deploy via Amplify.
 - Developer: run the README testing checklist against the live stack.
-- Optional: add DynamoDB TTL attribute (documented as non-security cleanup only).
