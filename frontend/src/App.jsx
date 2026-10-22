@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { getCurrentUser } from 'aws-amplify/auth';
 import { configureAmplify } from './services/config';
 import { getCurrentUserEmail } from './services/auth';
@@ -24,20 +24,30 @@ function ProtectedLayout({ children, email }) {
 export default function App() {
   const [authState, setAuthState] = useState('checking'); // checking | authed | guest
   const [email, setEmail] = useState('');
+  const location = useLocation();
 
   useEffect(() => {
+    let cancelled = false;
+    setAuthState('checking');
+
     async function check() {
       try {
         await getCurrentUser();
         const mail = await getCurrentUserEmail();
+        if (cancelled) return;
         setEmail(mail || '');
         setAuthState('authed');
       } catch (err) {
+        if (cancelled) return;
+        setEmail('');
         setAuthState('guest');
       }
     }
     check();
-  }, []);
+    return () => {
+      cancelled = true;
+    };
+  }, [location.pathname]);
 
   if (authState === 'checking') {
     return <div className="container center"><p className="muted">Loading…</p></div>;

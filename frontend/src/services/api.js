@@ -63,8 +63,9 @@ export async function resolveShare(shareId, token) {
 }
 
 export function uploadToS3(url, file, contentType, onProgress) {
+  const headers = contentType ? { 'Content-Type': contentType } : {};
   return axios.put(url, file, {
-    headers: { 'Content-Type': contentType },
+    headers,
     onUploadProgress: (e) => {
       if (onProgress && e.total) {
         onProgress(Math.round((e.loaded * 100) / e.total));

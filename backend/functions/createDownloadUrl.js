@@ -21,13 +21,13 @@ exports.handler = async (event) => {
     const url = await getDownloadUrl(file.s3Key, 300);
     return {
       statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
       body: JSON.stringify({ downloadUrl: url }),
     };
   } catch (err) {
     return {
       statusCode: err.message.startsWith('Unauthorized') ? 401 : 400,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
       body: JSON.stringify({ error: err.message }),
     };
   }

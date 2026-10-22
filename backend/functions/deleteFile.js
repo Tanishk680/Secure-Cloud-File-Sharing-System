@@ -22,13 +22,13 @@ exports.handler = async (event) => {
     await deleteFile(fileId);
     return {
       statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
       body: JSON.stringify({ message: 'File deleted' }),
     };
   } catch (err) {
     return {
       statusCode: err.message.startsWith('Unauthorized') ? 401 : 400,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
       body: JSON.stringify({ error: err.message }),
     };
   }

@@ -14,13 +14,13 @@ exports.handler = async (event) => {
     await updateShareRevoked(shareId, true);
     return {
       statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
       body: JSON.stringify({ message: 'Share revoked' }),
     };
   } catch (err) {
     return {
       statusCode: err.message.startsWith('Unauthorized') ? 401 : 400,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
       body: JSON.stringify({ error: err.message }),
     };
   }

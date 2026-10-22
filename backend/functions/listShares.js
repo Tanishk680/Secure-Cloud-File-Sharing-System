@@ -14,13 +14,13 @@ exports.handler = async (event) => {
     const shares = await listSharesByFile(fileId);
     return {
       statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
       body: JSON.stringify({ shares }),
     };
   } catch (err) {
     return {
       statusCode: err.message.startsWith('Unauthorized') ? 401 : 400,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
       body: JSON.stringify({ error: err.message }),
     };
   }

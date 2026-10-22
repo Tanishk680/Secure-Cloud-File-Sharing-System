@@ -53,7 +53,12 @@ export default function Upload() {
       setStatus('Upload complete.');
       setTimeout(() => navigate('/'), 800);
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Upload failed');
+      const detail =
+        err.response?.data?.error ||
+        (err.response ? `Request failed (${err.response.status})` : '') ||
+        err.message ||
+        'Upload failed';
+      setError(`Upload failed: ${detail}${err.code ? ` [${err.code}]` : ''}`);
       setStatus('');
     } finally {
       setUploading(false);

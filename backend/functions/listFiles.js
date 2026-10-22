@@ -7,13 +7,13 @@ exports.handler = async (event) => {
     const files = await listFilesByOwner(ownerId);
     return {
       statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
       body: JSON.stringify({ files }),
     };
   } catch (err) {
     return {
       statusCode: err.message.startsWith('Unauthorized') ? 401 : 400,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
       body: JSON.stringify({ error: err.message }),
     };
   }

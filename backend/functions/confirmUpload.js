@@ -17,7 +17,7 @@ exports.handler = async (event) => {
 
     // Ensure the key belongs to this user's namespace to prevent claiming others' objects
     if (!s3Key.startsWith(`uploads/${ownerId}/`)) {
-      return { statusCode: 403, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error: 'Forbidden' }) };
+      return { statusCode: 403, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ error: 'Forbidden' }) };
     }
 
     // Verify the object actually exists and matches the declared size
@@ -43,13 +43,13 @@ exports.handler = async (event) => {
 
     return {
       statusCode: 201,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
       body: JSON.stringify({ file }),
     };
   } catch (err) {
     return {
       statusCode: err.message.startsWith('Unauthorized') ? 401 : 400,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
       body: JSON.stringify({ error: err.message }),
     };
   }
