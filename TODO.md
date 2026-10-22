@@ -54,5 +54,6 @@
 - [x] Align token type end to end (ID token for REST Cognito authorizer + backend verify)
 - [x] Write comprehensive README (architecture, setup, deployment, testing)
 - [x] Maintain Implementation-Log.md with progress
-- [ ] Manual end-to-end testing after AWS deployment (requires real AWS account)
-- [ ] Deploy backend via SAM and frontend via Amplify (requires developer's AWS credentials)
+- [x] Deploy backend via SAM to AWS (stack `secure-file-sharing`, us-east-1) — see Implementation-Log for outputs
+- [ ] Deploy frontend via Amplify
+- [ ] Manual end-to-end testing after AWS deployment

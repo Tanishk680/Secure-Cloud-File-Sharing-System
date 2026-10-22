@@ -113,16 +113,33 @@
   that forbids creating IAM roles, while SAM creates one role per function.
 
 **Fix**
-- `infrastructure/template.yaml` now takes a `LambdaRoleArn` parameter and sets
-  `Globals.Function.Role`; all per-function `Policies` blocks were removed.
-  Every function runs under the pre-provisioned
-  `arn:aws:iam::958682950316:role/LabRole`.
-- `sam build` + `sam package` + `sam deploy --guided` (three parameters:
-  `CognitoUserPoolId`, `CognitoClientId`, `LambdaRoleArn`).
+- `infrastructure/template.yaml` now takes a `LambdaRoleArn` parameter; all
+  per-function `Policies` blocks were removed. Every function runs under the
+  pre-provisioned `arn:aws:iam::958682950316:role/LabRole`.
+
+**Second problem (found during first retry)**
+- `sam build` failed with `InvalidGlobalsSectionException`: `Role` is **not** a
+  supported property of `Globals.Function`, so the earlier attempt silently
+  reused the previously built (stale) template and kept creating roles.
+- Fix: `Role: !Ref LambdaRoleArn` is now set on **each** of the 9 functions
+  (not in `Globals`). Verified the built template contains no `AWS::IAM::Role`.
+
+**Deployment (success)**
+- `sam build` + `sam deploy --stack-name secure-file-sharing --region us-east-1
+  --s3-bucket secure-files-artifacts-30087 --capabilities CAPABILITY_IAM`
+  with `CognitoUserPoolId`, `CognitoClientId`, `LambdaRoleArn`.
+- Stack `CREATE_COMPLETE` in us-east-1. Outputs:
+  - `ApiUrl` = https://tjhpqyqupj.execute-api.us-east-1.amazonaws.com/Prod
+  - `S3BucketName` = secure-file-sharing-filesbucket-jojs7ddurqm3
+  - `FilesTableName` = secure-file-sharing-FilesTable-19CWTOHKQNWGJ
+  - `SharesTableName` = secure-file-sharing-SharesTable-1UY9KE77B2AHG
+- Reset `frontend/.env` values come from these outputs; Amplify uses console env
+  vars (see README).
 - Tradeoff documented in README: coarser IAM permissions in the lab; a normal
   account can restore per-function least-privilege `Policies`.
 
 ### Next Steps
-- Developer: deploy with `sam deploy --guided` (LabRole ARN) and record `ApiUrl`.
-- Developer: configure `frontend/.env` and deploy via Amplify.
+- Developer: create the Amplify app (repo `Tanishk680/Secure-Cloud-File-Sharing-System`,
+  branch `main`), set the five `VITE_*` env vars, add the SPA rewrite, deploy.
+- Developer: set the real `VITE_SHARE_BASE_URL` and redeploy.
 - Developer: run the README testing checklist against the live stack.
