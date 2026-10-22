@@ -8,7 +8,7 @@
 - [x] Create DynamoDB tables (FilesTable, SharesTable) with GSIs via SAM
 - [x] Cognito User Pool is created manually; SAM consumes its IDs as parameters
 - [x] Define API Gateway REST API + Cognito authorizer + CORS via SAM
-- [x] Configure least-privilege IAM policies per Lambda via SAM policy templates
+- [x] Use a shared pre-provisioned Lambda execution role (`LambdaRoleArn`); lab accounts deny `iam:CreateRole`
 - [x] Add Amplify build spec (amplify.yml)
 
 ## Phase 2: Authentication
@@ -50,6 +50,7 @@
 - [x] SAM template validated as well-formed YAML
 - [x] Local mock test harness (`backend/test/localTest.js`) — 34 cases pass without AWS
 - [x] Fix deployment blockers: reserved AWS_REGION, S3 CORS, API Gateway preflight/CORS, nodejs20.x
+- [x] Replace per-function IAM roles with existing `LabRole` (lab denies `iam:CreateRole`)
 - [x] Align token type end to end (ID token for REST Cognito authorizer + backend verify)
 - [x] Write comprehensive README (architecture, setup, deployment, testing)
 - [x] Maintain Implementation-Log.md with progress

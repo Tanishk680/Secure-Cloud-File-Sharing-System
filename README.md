@@ -209,8 +209,9 @@ Status codes used: `200`, `201`, `400`, `401`, `403`, `404`, `500`.
 3. **Amazon DynamoDB tables** — created by the template (`FilesTable`,
    `SharesTable`) with the GSIs described above.
 
-4. **AWS Lambda + IAM** — created by the template with least-privilege policies
-   (S3 read/write on the one bucket, DynamoDB read/write on the two tables).
+4. **AWS Lambda** — created by the template and configured to run under a
+   **pre-existing IAM execution role** supplied via the `LambdaRoleArn`
+   parameter. See the lab-account note below.
 
 5. **Amazon API Gateway** — created by the template (stage `Prod`) with a
    Cognito authorizer as the default and CORS enabled.
@@ -250,11 +251,22 @@ sam build
 sam deploy --guided \
   --parameter-overrides \
       CognitoUserPoolId=<your-user-pool-id> \
-      CognitoClientId=<your-app-client-id>
+      CognitoClientId=<your-app-client-id> \
+      LambdaRoleArn=arn:aws:iam::<account-id>:role/<lambda-execution-role>
 ```
 
 `sam deploy` outputs the **API base URL** and resource names. Copy the API URL
 into `frontend/.env` as `VITE_API_BASE_URL`.
+
+> **Restricted lab accounts (AWS Academy / Vocareum).** These accounts deny
+> `iam:CreateRole`, so they cannot create per-function roles. The template
+> therefore requires `LambdaRoleArn` and uses one existing role for every
+> function (e.g. `arn:aws:iam::<account>:role/LabRole`). In a normal AWS account
+> you can instead delete `Globals.Function.Role` and give each function its own
+> least-privilege `Policies` block (S3 + DynamoDB scoped to the stack's
+> resources). The tradeoff in the lab is coarser permissions, not weaker
+> application-level authorization — every handler still enforces ownership and
+> share rules.
 
 ### 2. Run the frontend locally
 

@@ -7,11 +7,18 @@ Parameters:
     Type: String
   CognitoClientId:
     Type: String
+  LambdaRoleArn:
+    Type: String
+    Description: >-
+      ARN of an existing IAM role for Lambda execution. Restricted lab accounts
+      (e.g. AWS Academy) cannot create roles, so a pre-provisioned role such as
+      arn:aws:iam::<account-id>:role/LabRole is reused by all functions.
 
 Globals:
   Function:
     Runtime: nodejs20.x
     Timeout: 30
+    Role: !Ref LambdaRoleArn
     Environment:
       Variables:
         S3_BUCKET_NAME: !Ref FilesBucket
@@ -94,11 +101,6 @@ Resources:
     Properties:
       CodeUri: ../backend
       Handler: functions/createUploadUrl.handler
-      Policies:
-        - S3WritePolicy:
-            BucketName: !Ref FilesBucket
-        - DynamoDBCrudPolicy:
-            TableName: !Ref FilesTable
       Events:
         CreateUploadUrl:
           Type: Api
@@ -114,11 +116,6 @@ Resources:
     Properties:
       CodeUri: ../backend
       Handler: functions/confirmUpload.handler
-      Policies:
-        - S3ReadPolicy:
-            BucketName: !Ref FilesBucket
-        - DynamoDBCrudPolicy:
-            TableName: !Ref FilesTable
       Events:
         ConfirmUpload:
           Type: Api
@@ -134,9 +131,6 @@ Resources:
     Properties:
       CodeUri: ../backend
       Handler: functions/listFiles.handler
-      Policies:
-        - DynamoDBReadPolicy:
-            TableName: !Ref FilesTable
       Events:
         ListFiles:
           Type: Api
@@ -152,11 +146,6 @@ Resources:
     Properties:
       CodeUri: ../backend
       Handler: functions/createDownloadUrl.handler
-      Policies:
-        - S3ReadPolicy:
-            BucketName: !Ref FilesBucket
-        - DynamoDBReadPolicy:
-            TableName: !Ref FilesTable
       Events:
         Download:
           Type: Api
@@ -172,11 +161,6 @@ Resources:
     Properties:
       CodeUri: ../backend
       Handler: functions/deleteFile.handler
-      Policies:
-        - S3CrudPolicy:
-            BucketName: !Ref FilesBucket
-        - DynamoDBCrudPolicy:
-            TableName: !Ref FilesTable
       Events:
         DeleteFile:
           Type: Api
@@ -192,11 +176,6 @@ Resources:
     Properties:
       CodeUri: ../backend
       Handler: functions/createShare.handler
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref FilesTable
-        - DynamoDBCrudPolicy:
-            TableName: !Ref SharesTable
       Events:
         CreateShare:
           Type: Api
@@ -212,13 +191,6 @@ Resources:
     Properties:
       CodeUri: ../backend
       Handler: functions/resolveShare.handler
-      Policies:
-        - S3ReadPolicy:
-            BucketName: !Ref FilesBucket
-        - DynamoDBReadPolicy:
-            TableName: !Ref FilesTable
-        - DynamoDBReadPolicy:
-            TableName: !Ref SharesTable
       Events:
         ResolveShare:
           Type: Api
@@ -234,11 +206,6 @@ Resources:
     Properties:
       CodeUri: ../backend
       Handler: functions/listShares.handler
-      Policies:
-        - DynamoDBReadPolicy:
-            TableName: !Ref FilesTable
-        - DynamoDBReadPolicy:
-            TableName: !Ref SharesTable
       Events:
         ListShares:
           Type: Api
@@ -254,9 +221,6 @@ Resources:
     Properties:
       CodeUri: ../backend
       Handler: functions/revokeShare.handler
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref SharesTable
       Events:
         RevokeShare:
           Type: Api

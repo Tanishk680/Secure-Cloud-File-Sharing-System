@@ -104,7 +104,25 @@
   and backend `lib/auth.js` verifies `tokenUse: 'id'` (+ `clientId`/`aud` check).
 - Frontend build passes; local harness still 34/34.
 
+### 2026-10-22 — Session 4 (lab-account IAM constraint)
+
+**Problem**
+- First CloudFormation deploy failed at `CreateDownloadUrlFunctionRole`:
+  `not authorized to perform: iam:CreateRole` (plus `UnauthorizedTaggingOperation`).
+- Account is a restricted Vocareum/AWS Academy lab (`assumed-role/voclabs/...`)
+  that forbids creating IAM roles, while SAM creates one role per function.
+
+**Fix**
+- `infrastructure/template.yaml` now takes a `LambdaRoleArn` parameter and sets
+  `Globals.Function.Role`; all per-function `Policies` blocks were removed.
+  Every function runs under the pre-provisioned
+  `arn:aws:iam::958682950316:role/LabRole`.
+- `sam build` + `sam package` + `sam deploy --guided` (three parameters:
+  `CognitoUserPoolId`, `CognitoClientId`, `LambdaRoleArn`).
+- Tradeoff documented in README: coarser IAM permissions in the lab; a normal
+  account can restore per-function least-privilege `Policies`.
+
 ### Next Steps
-- Developer: create Cognito User Pool/App Client, then `sam build && sam deploy`.
+- Developer: deploy with `sam deploy --guided` (LabRole ARN) and record `ApiUrl`.
 - Developer: configure `frontend/.env` and deploy via Amplify.
 - Developer: run the README testing checklist against the live stack.
