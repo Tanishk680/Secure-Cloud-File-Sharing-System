@@ -44,14 +44,18 @@ function validateExpiry(expiry) {
   return expiry;
 }
 
-function validateShareType(shareType, recipientId) {
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function validateShareType(shareType, recipientEmail) {
   if (shareType !== 'link' && shareType !== 'recipient') {
     throw new Error('Invalid share type');
   }
-  if (shareType === 'recipient' && !recipientId) {
-    throw new Error('Recipient required for recipient share');
+  if (shareType === 'recipient') {
+    if (!recipientEmail || !EMAIL_RE.test(String(recipientEmail).trim())) {
+      throw new Error('Valid recipient email required for recipient share');
+    }
   }
-  return { shareType, recipientId };
+  return { shareType, recipientEmail };
 }
 
 module.exports = { validateFileMetadata, validateExpiry, validateShareType };

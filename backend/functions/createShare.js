@@ -24,9 +24,9 @@ exports.handler = async (event) => {
     if (file.ownerId !== ownerId) return { statusCode: 403, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ error: 'Forbidden' }) };
 
     const body = JSON.parse(event.body || '{}');
-    const { shareType, recipientId, expiry } = body;
+    const { shareType, recipientEmail, expiry } = body;
     validateExpiry(expiry);
-    validateShareType(shareType, recipientId);
+    validateShareType(shareType, recipientEmail);
 
     const shareId = uuidv4();
     const now = new Date().toISOString();
@@ -36,7 +36,7 @@ exports.handler = async (event) => {
       fileId,
       ownerId,
       shareType,
-      recipientId: shareType === 'recipient' ? recipientId : null,
+      recipientEmail: shareType === 'recipient' ? String(recipientEmail).trim().toLowerCase() : null,
       createdAt: now,
       expiresAt,
       revoked: false,

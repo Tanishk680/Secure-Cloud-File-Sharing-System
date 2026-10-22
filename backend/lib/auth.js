@@ -34,4 +34,18 @@ async function getUserFromToken(event) {
   }
 }
 
-module.exports = { getUserId, getUserFromToken };
+async function getUserEmailFromToken(event) {
+  const authHeader = event.headers?.Authorization || event.headers?.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return null; // unauthenticated
+  }
+  const token = authHeader.substring(7);
+  try {
+    const payload = await verifier.verify(token);
+    return payload.email ? String(payload.email).toLowerCase() : null;
+  } catch (err) {
+    throw new Error('Unauthorized: ' + err.message);
+  }
+}
+
+module.exports = { getUserId, getUserFromToken, getUserEmailFromToken };

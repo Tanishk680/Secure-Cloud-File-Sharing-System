@@ -4,7 +4,7 @@ import { SHARE_BASE_URL } from '../services/config';
 
 export default function ShareDialog({ file, onClose }) {
   const [shareType, setShareType] = useState('link');
-  const [recipientId, setRecipientId] = useState('');
+  const [recipientEmail, setRecipientEmail] = useState('');
   const [expiry, setExpiry] = useState('24h');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -16,7 +16,7 @@ export default function ShareDialog({ file, onClose }) {
     try {
       const share = await createShare(file.fileId, {
         shareType,
-        recipientId: shareType === 'recipient' ? recipientId.trim() : undefined,
+        recipientEmail: shareType === 'recipient' ? recipientEmail.trim() : undefined,
         expiry,
       });
       setShareLink(`${SHARE_BASE_URL}/shared/${share.shareId}`);
@@ -58,11 +58,12 @@ export default function ShareDialog({ file, onClose }) {
 
             {shareType === 'recipient' && (
               <>
-                <label>Recipient Cognito User ID (sub)</label>
+                <label>Recipient email</label>
                 <input
-                  value={recipientId}
-                  onChange={(e) => setRecipientId(e.target.value)}
-                  placeholder="e.g. 5f8c2b1a-..."
+                  type="email"
+                  value={recipientEmail}
+                  onChange={(e) => setRecipientEmail(e.target.value)}
+                  placeholder="recipient@example.com"
                 />
               </>
             )}

@@ -1,4 +1,4 @@
-const { getUserFromToken } = require('../lib/auth');
+const { getUserEmailFromToken } = require('../lib/auth');
 const { getShare, getFile } = require('../lib/dynamodb');
 const { getDownloadUrl } = require('../lib/s3');
 
@@ -21,9 +21,9 @@ exports.handler = async (event) => {
 
     // Check access
     if (share.shareType === 'recipient') {
-      const userId = await getUserFromToken(event);
-      if (!userId) return { statusCode: 401, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ error: 'Authentication required' }) };
-      if (userId !== share.recipientId) return { statusCode: 403, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ error: 'Forbidden' }) };
+      const email = await getUserEmailFromToken(event);
+      if (!email) return { statusCode: 401, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ error: 'Authentication required' }) };
+      if (email !== share.recipientEmail) return { statusCode: 403, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ error: 'Forbidden' }) };
     }
     // For link sharing, unauthenticated is allowed as per spec
 

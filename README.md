@@ -117,11 +117,11 @@ secure-cloud-file-sharing/
 
 ### Sharing
 - `POST /files/{fileId}/shares` creates a share record with a `shareId`,
-  `shareType` (`link` or `recipient`), optional `recipientId`, `expiresAt`
+   `shareType` (`link` or `recipient`), required `recipientEmail` for recipient, `expiresAt`
   (epoch seconds), and `revoked = false`. Expiry options: **1h / 24h / 7d**.
 - `GET /shares/{shareId}` resolves a share. It rejects revoked shares, expired
-  shares (`expiresAt` compared against server time), and — for recipient shares
-  — any caller whose Cognito `sub` is not the recorded `recipientId`. On success
+   shares (`expiresAt` compared against server time), and — for recipient shares
+   — any caller whose ID-token `email` does not match the recorded `recipientEmail`. On success
   it returns a short-lived pre-signed GET URL.
 - `GET /files/{fileId}/shares` lists shares for a file owned by the caller.
 - `DELETE /shares/{shareId}` revokes a share owned by the caller.
@@ -159,7 +159,7 @@ Primary key: `shareId` (string). GSI: `fileId-index` on `fileId`.
 | `fileId` | Associated file |
 | `ownerId` | Owner of the file |
 | `shareType` | `link` or `recipient` |
-| `recipientId` | Required for recipient shares |
+| `recipientEmail` | Required for recipient shares (stored lowercased) |
 | `createdAt` | ISO 8601 timestamp |
 | `expiresAt` | Epoch seconds |
 | `revoked` | Boolean |
@@ -181,7 +181,8 @@ Primary key: `shareId` (string). GSI: `fileId-index` on `fileId`.
 | DELETE | `/shares/{shareId}` | Cognito | Revoke an owned share |
 
 \* Public only for `link` shares. `recipient` shares require a valid token whose
-`sub` matches the recorded recipient, and return `401`/`403` otherwise.
+ID-token `email` matches the recorded `recipientEmail`, and return `401`/`403`
+otherwise.
 
 Status codes used: `200`, `201`, `400`, `401`, `403`, `404`, `500`.
 
@@ -199,8 +200,8 @@ Status codes used: `200`, `201`, `400`, `401`, `403`, `404`, `500`.
    - Note the **User Pool ID** and **App Client ID**.
    - (Recommended for faster demo) allow auto-confirmation or use the email
      verification flow the UI already implements.
-   - Optionally add a custom attribute or rely on the built-in `sub` as the user
-     ID used for recipient-restricted shares.
+   - Recipient shares are validated by the caller's ID-token `email` against
+      `recipientEmail`.
 
 2. **Amazon S3 bucket** — created by the SAM template with:
    - Block Public Access **enabled**
@@ -302,8 +303,8 @@ Files
 Sharing
 - [ ] Create a `link` share (1h/24h/7d) and open it in a new browser/incognito
       window (no login) — download works.
-- [ ] Create a `recipient` share; a different authenticated user gets `403`,
-      the correct recipient succeeds, and an unauthenticated caller gets `401`.
+- [ ] Create a `recipient` share using an email; a different authenticated user gets `403`,      
+       the correct recipient succeeds, and an unauthenticated caller gets `401`. 
 - [ ] Wait for expiry (or use a 1h share) and confirm it is rejected.
 - [ ] Revoke an active share and confirm new resolutions are rejected.
 - [ ] Reuse an already-issued pre-signed URL until it expires (documented

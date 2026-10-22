@@ -41,8 +41,8 @@ export async function deleteFile(fileId) {
   return data;
 }
 
-export async function createShare(fileId, { shareType, recipientId, expiry }) {
-  const { data } = await api.post(`/files/${fileId}/shares`, { shareType, recipientId, expiry });
+export async function createShare(fileId, { shareType, recipientEmail, expiry }) {
+  const { data } = await api.post(`/files/${fileId}/shares`, { shareType, recipientEmail, expiry });
   return data.share;
 }
 

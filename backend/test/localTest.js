@@ -22,6 +22,13 @@ const state = {
   uuidCounter: 0,
 };
 
+const USER_EMAILS = {
+  'user-a': 'alice@example.com',
+  'user-b': 'bob@example.com',
+  'user-c': 'carol@example.com',
+  'user-d': 'dave@example.com',
+};
+
 const mockAuth = {
   async getUserId(event) {
     const h = event?.headers?.Authorization || event?.headers?.authorization;
@@ -34,6 +41,11 @@ const mockAuth = {
     const h = event?.headers?.Authorization || event?.headers?.authorization;
     if (!h || !h.startsWith('Bearer ')) return null;
     return state.currentUser;
+  },
+  async getUserEmailFromToken(event) {
+    const h = event?.headers?.Authorization || event?.headers?.authorization;
+    if (!h || !h.startsWith('Bearer ')) return null;
+    return USER_EMAILS[state.currentUser] || null;
   },
 };
 
@@ -237,7 +249,7 @@ async function main() {
   res = await handlers.createShare(
     as('user-a', {
       pathParameters: { fileId: fileA },
-      body: { shareType: 'recipient', recipientId: 'user-c', expiry: '1h' },
+      body: { shareType: 'recipient', recipientEmail: 'carol@example.com', expiry: '1h' },
     })
   );
   const recipShareId = parse(res).share?.shareId;
@@ -279,6 +291,14 @@ async function main() {
     as('user-a', { pathParameters: { fileId: fileA }, body: { shareType: 'link', expiry: '30d' } })
   );
   check('rejects invalid expiry (400)', res.statusCode === 400, res.statusCode);
+  res = await handlers.createShare(
+    as('user-a', { pathParameters: { fileId: fileA }, body: { shareType: 'recipient', recipientEmail: 'not-an-email', expiry: '1h' } })
+  );
+  check('rejects invalid recipient email (400)', res.statusCode === 400, res.statusCode);
+  res = await handlers.createShare(
+    as('user-a', { pathParameters: { fileId: fileA }, body: { shareType: 'recipient', expiry: '1h' } })
+  );
+  check('rejects missing recipient email (400)', res.statusCode === 400, res.statusCode);
   res = await handlers.createUploadUrl(anon({ body: PDF }));
   check('unauthenticated upload rejected (401)', res.statusCode === 401, res.statusCode);
 
