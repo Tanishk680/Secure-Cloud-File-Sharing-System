@@ -55,5 +55,5 @@
 - [x] Write comprehensive README (architecture, setup, deployment, testing)
 - [x] Maintain Implementation-Log.md with progress
 - [x] Deploy backend via SAM to AWS (stack `secure-file-sharing`, us-east-1) — see Implementation-Log for outputs
-- [ ] Deploy frontend via Amplify
-- [ ] Manual end-to-end testing after AWS deployment
+- [x] Deploy frontend via Amplify
+- [x] Manual end-to-end testing after AWS deployment
